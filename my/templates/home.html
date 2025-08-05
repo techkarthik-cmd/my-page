@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Home · Karthik{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Hi, I'm Karthik — Data Engineer</h1>
+  <p>I build data pipelines, AI/n8n automations, and cloud-native apps.</p>
+  <a class="btn" href="{% url 'projects_list' %}">See Projects</a>
+</section>
+
+<section>
+  <h2>Recent Projects</h2>
+  <div class="grid">
+    {% for p in recent %}
+    <article class="card">
+      {% if p.cover %}<img src="{{ p.cover.url }}" alt="{{ p.title }}"/>{% endif %}
+      <h3><a href="{% url 'project_detail' p.pk %}">{{ p.title }}</a></h3>
+      <p>{{ p.short_desc }}</p>
+      <p class="muted">{{ p.tech_stack }}</p>
+    </article>
+    {% empty %}
+      <p>No projects yet. Add some in admin.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

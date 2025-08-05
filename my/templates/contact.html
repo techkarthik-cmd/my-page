@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Contact · Karthik{% endblock %}
+{% block content %}
+<h1>Contact</h1>
+
+{% if messages %}
+  {% for m in messages %}<p class="alert">{{ m }}</p>{% endfor %}
+{% endif %}
+
+<form method="post" class="form">
+  {% csrf_token %}
+  <label>Name {{ form.name }}</label>
+  <label>Email {{ form.email }}</label>
+  <label>Message {{ form.message }}</label>
+  <button class="btn" type="submit">Send</button>
+</form>
+{% endblock %}

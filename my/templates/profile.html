@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Profile · Karthik{% endblock %}
+{% block content %}
+<section class="card" style="padding:1.1rem">
+  <h1 style="margin:.2rem 0 .6rem">Professional Profile</h1>
+  <div class="grid" style="grid-template-columns:1fr 1fr; gap:1rem">
+    <div>
+      <h3 class="section-title">Personal</h3>
+      <p><strong>Name:</strong> {{ profile.user.first_name }} {{ profile.user.last_name }}</p>
+      <p><strong>Email:</strong> {{ profile.user.email }}</p>
+      <p><strong>Phone:</strong> {{ profile.phone }}</p>
+      <p><strong>Headline:</strong> {{ profile.headline }}</p>
+    </div>
+    <div>
+      <h3 class="section-title">Skills</h3>
+      <p class="muted">{{ profile.skills|default:"Not set" }}</p>
+    </div>
+  </div>
+
+  <h3 class="section-title">Summary</h3>
+  <p>{{ profile.summary|linebreaks }}</p>
+
+  <h3 class="section-title">Experience</h3>
+  <p>{{ profile.experience|linebreaks }}</p>
+
+  {% if not request.user.is_staff %}
+  <div class="alert" style="margin-top:1rem">
+    This profile is maintained by the administrator. To request changes, please contact the admin.
+  </div>
+  {% endif %}
+
+  {% if profile.resume %}
+  <h3 class="section-title">Resume</h3>
+  <a class="btn" href="{{ profile.resume.url }}" download target="_blank">
+    📄 Download Resume
+  </a>
+ {% else %}
+  <p class="muted">No resume uploaded.</p>
+ {% endif %}
+
+</section>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}OTP Login{% endblock %}
+{% block content %}
+<section class="form">
+  <h1>OTP Login</h1>
+  <form method="post">
+    {% csrf_token %}
+    <label>Phone Number {{ form.phone }}</label>
+    <button class="btn" type="submit">Send OTP</button>
+  </form>
+  <p class="muted">Or <a href="{% url 'login' %}">login with password</a></p>
+</section>
+{% endblock %}

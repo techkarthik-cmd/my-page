@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Projects · Karthik{% endblock %}
+{% block content %}
+<h1>Projects</h1>
+<div class="grid">
+  {% for p in projects %}
+  <article class="card">
+    {% if p.cover %}<img src="{{ p.cover.url }}" alt="{{ p.title }}"/>{% endif %}
+    <h3><a href="{% url 'project_detail' p.pk %}">{{ p.title }}</a></h3>
+    <p>{{ p.short_desc }}</p>
+    <p class="muted">{{ p.tech_stack }}</p>
+  </article>
+  {% empty %}
+    <p>No projects found.</p>
+  {% endfor %}
+</div>
+{% endblock %}

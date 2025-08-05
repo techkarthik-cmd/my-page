@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+{% if next %}
+  <p class="muted">You must log in to view that page.</p>
+{% endif %}
+<section class="form">
+  <h1>Login</h1>
+  <form method="post">
+    {% csrf_token %}
+    <label>Login (Email or Phone or Username) {{ form.login }}</label>
+    <label>Password (or use OTP route) {{ form.password }}</label>
+    <button class="btn" type="submit">Login</button>
+  </form>
+  <p class="muted">No account? <a href="{% url 'signup' %}">Sign up</a> ·
+  <a href="{% url 'otp_request' %}">Login with OTP</a> ·
+  <a href="{% url 'password_reset' %}">Forgot password?</a></p>
+</section>
+{% endblock %}

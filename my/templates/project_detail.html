@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ project.title }} · Karthik{% endblock %}
+
+{% block content %}
+<article class="detail">
+
+  <!-- Title -->
+  <h1 class="detail-title">{{ project.title }}</h1>
+
+  <!-- Cover or fallback -->
+  {% if project.cover %}
+    <img class="cover" src="{{ project.cover.url }}" alt="{{ project.title }}">
+  {% else %}
+    <div class="cover img-fallback" aria-hidden="true"></div>
+  {% endif %}
+
+  <!-- Meta / tech stack -->
+  <div class="detail-meta">
+    <span class="badge">Tech Stack</span>
+    <span class="muted">{{ project.tech_stack }}</span>
+  </div>
+
+  <!-- Description -->
+  <div class="detail-body">
+    <p>{{ project.description|linebreaks }}</p>
+  </div>
+
+  <!-- Links -->
+  <div class="links">
+    {% if project.repo_url %}
+      <a class="btn" href="{{ project.repo_url }}" target="_blank" rel="noopener">Repository</a>
+    {% endif %}
+    {% if project.live_url %}
+      <a class="btn" href="{{ project.live_url }}" target="_blank" rel="noopener">Live Demo</a>
+    {% endif %}
+  </div>
+
+  <!-- Optional: quick facts -->
+  <div class="detail-facts">
+    <div class="card">
+      <h3>Quick Facts</h3>
+      <ul class="tight">
+        <li><strong>Created:</strong> {{ project.created_at|date:"24-02-2025" }}</li> <!--"M d, Y"-->
+        {% if project.repo_url %}<li><strong>Code:</strong> {{ project.repo_url }}</li>{% endif %}
+        {% if project.live_url %}<li><strong>Demo:</strong> {{ project.live_url }}</li>{% endif %}
+      </ul>
+    </div>
+  </div>
+
+</article>
+{% endblock %}

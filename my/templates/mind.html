@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+{% block title %}Mind · AWS Data Engineer{% endblock %}
+{% block content %}
+<section class="mind-hero">
+  <h1>AWS Data Engineer — Mind Map</h1>
+  <p>Explore domains, services, and typical tasks. Click any node → see details on the right.</p>
+</section>
+
+<section class="mind-wrap">
+  <div class="mind-canvas">
+    <!-- SVG mind map will be injected here -->
+    <svg id="mindmap" viewBox="0 0 1000 700" role="img" aria-label="AWS Data Engineer mind map"></svg>
+  </div>
+
+  <aside class="mind-panel" id="mind-panel" aria-live="polite">
+    <div class="panel-inner">
+      <h2 id="panel-title">Getting Started</h2>
+      <p id="panel-desc">Click a node to view responsibilities, common patterns, and AWS services.</p>
+
+      <div class="chips" id="panel-tags"></div>
+
+      <div class="panel-cards" id="panel-cards">
+        <div class="card">
+          <h3>Daily Flow</h3>
+          <ul class="tight">
+            <li>Design pipelines (batch/stream)</li>
+            <li>Build ETL in Glue/Spark</li>
+            <li>Optimize S3 + partitions</li>
+            <li>Query via Athena/Redshift</li>
+            <li>Automate with MWAA/Step Functions</li>
+            <li>Secure with IAM/KMS, monitor in CloudWatch</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<style>
+/* ===== Page-specific advanced styles ===== */
+.mind-hero{padding:1.5rem 0 1rem}
+.mind-hero h1{
+  margin:0;
+  font-size:clamp(1.6rem,3vw,2.2rem);
+  background:linear-gradient(120deg, var(--brand), var(--brand-2));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.mind-wrap{
+  display:grid; grid-template-columns: 1.4fr .9fr; gap:1.25rem; align-items:start;
+}
+.mind-canvas{
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:16px; overflow:hidden; position:relative; min-height:520px;
+}
+#mindmap{ width:100%; height:auto; display:block }
+.node{ cursor:pointer; }
+.node circle{ filter: drop-shadow(0 8px 18px rgba(0,0,0,.25)); }
+.node text{ font-size:14px; pointer-events:none; user-select:none; }
+.link{ stroke: color-mix(in oklab, var(--brand) 35%, var(--border)); stroke-width:2; opacity:.6 }
+
+.mind-panel{
+  background:var(--panel); border:1px solid var(--border); border-radius:16px;
+}
+.panel-inner{ padding:1rem 1rem 1.15rem }
+#panel-title{ margin:.1rem 0 .4rem }
+#panel-desc{ color:var(--muted); margin:.25rem 0 .75rem }
+.chips{ display:flex; gap:.4rem; flex-wrap:wrap; margin:.5rem 0 1rem }
+.chips .chip{
+  border:1px solid var(--border); padding:.25rem .55rem; border-radius:999px; font-size:.82rem; color:var(--muted)
+}
+.panel-cards{ display:grid; gap:.7rem }
+.panel-cards .card{
+  background:linear-gradient(180deg, color-mix(in oklab, var(--panel) 85%, transparent), transparent);
+  border:1px solid var(--border); border-radius:12px; padding:.8rem;
+}
+.panel-cards h3{ margin:.2rem 0 .35rem }
+.tight{ margin:.2rem 0 0 .9rem }
+.tight li{ margin:.15rem 0 }
+
+.tooltip{
+  position:absolute; pointer-events:none; padding:.4rem .55rem; font-size:.85rem;
+  background:color-mix(in oklab, var(--bg) 86%, #000 14%); color:var(--text);
+  border:1px solid var(--border); border-radius:10px; opacity:0; transform:translateY(6px);
+  transition:opacity .15s ease, transform .15s ease;
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 980px){
+  .mind-wrap{ grid-template-columns: 1fr; }
+}
+</style>
+
+<script>
+/* ===== Mind map data ===== */
+const DOMAINS = [
+  {
+    id: "ingest", label: "Ingestion",
+    desc: "Batch & streaming data capture from apps, DBs, events.",
+    tags: ["DMS","Kinesis","Kafka/MSK","S3 Transfer","Lambda"],
+    bullets: [
+      "DMS for relational → S3 parquet/CDC",
+      "Kinesis streams → ETL in Glue/EMR",
+      "Lambda/API Gateway for micro-ingest",
+      "Landing zone & raw prefixes in S3",
+    ]
+  },
+  {
+    id: "storage", label: "Data Lake",
+    desc: "Durable, cheap storage with layout for zones & governance.",
+    tags: ["S3","Lake Formation","Glue Catalog","Parquet"],
+    bullets: [
+      "Zones: raw → curated → consumption",
+      "Partitioning by date/entity; optimize file sizes",
+      "Glue Data Catalog + LF permissions",
+      "Object lifecycle, versioning, replication"
+    ]
+  },
+  {
+    id: "transform", label: "ETL / Transform",
+    desc: "Cleanse, join, and model data for analytics.",
+    tags: ["Glue","EMR","PySpark","AWS SDK"],
+    bullets: [
+      "Glue Job/Spark ETL with pushdown filters",
+      "Schema evolution & error handling (DLQ)",
+      "Unit tests (pytest), data quality checks",
+      "Optimize: repartition, coalesce, file sizes"
+    ]
+  },
+  {
+    id: "orchestrate", label: "Orchestration",
+    desc: "Schedule & manage dependencies & retries.",
+    tags: ["MWAA(Airflow)","Step Functions","EventBridge"],
+    bullets: [
+      "DAGs with idempotent tasks, retries, SLAs",
+      "Event-driven triggers via EventBridge",
+      "Blue/green deploy, param store/SecretsMgr",
+      "Backfills & data cutover plans"
+    ]
+  },
+  {
+    id: "query", label: "Query / Warehouse",
+    desc: "Ad-hoc & BI workloads on curated data.",
+    tags: ["Athena","Redshift","Spectrum","Iceberg"],
+    bullets: [
+      "Athena for serverless SQL on S3 (CTAS)",
+      "Redshift for BI with sort/dist keys",
+      "Spectrum for external S3 tables",
+      "Workload mgmt & concurrency scaling"
+    ]
+  },
+  {
+    id: "stream", label: "Streaming",
+    desc: "Real-time analytics & near-real-time ETL.",
+    tags: ["Kinesis Data Streams","KDF","Lambda","Flink"],
+    bullets: [
+      "Windowed aggregations, late events",
+      "KDF transformations → S3/Redshift",
+      "Flink on Kinesis for advanced state",
+      "Exactly-once where feasible"
+    ]
+  },
+  {
+    id: "security", label: "Security",
+    desc: "Least privilege, encryption, audit, network controls.",
+    tags: ["IAM","KMS","Lake Formation","VPC Endpoints"],
+    bullets: [
+      "IAM roles per stage, scoped S3 prefixes",
+      "KMS CMKs & DSSE encryption",
+      "LF table/column-level permissions",
+      "Private subnets, endpoints, no public S3"
+    ]
+  },
+  {
+    id: "ops", label: "Ops & Monitoring",
+    desc: "Observability, costs, SLAs, and reliability.",
+    tags: ["CloudWatch","CloudTrail","Cost Explorer","X-Ray"],
+    bullets: [
+      "Structured logs + metrics + alarms",
+      "DLQs & replay strategy",
+      "Cost tagging & S3 storage classes",
+      "Perf tuning & capacity mgmt"
+    ]
+  }
+];
+
+/* ===== Render SVG radial mind map ===== */
+const svg = document.getElementById('mindmap');
+const NS = "http://www.w3.org/2000/svg";
+const W = 1000, H = 700; const cx = W/2, cy = H/2;
+const R = 230; // radius for domain ring
+
+// Tooltip (HTML overlay)
+const tip = document.createElement('div');
+tip.className = 'tooltip';
+document.querySelector('.mind-canvas').appendChild(tip);
+
+function line(x1,y1,x2,y2, cls='link'){
+  const l = document.createElementNS(NS,'line');
+  l.setAttribute('x1',x1); l.setAttribute('y1',y1);
+  l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+  l.setAttribute('class',cls);
+  svg.appendChild(l);
+  return l;
+}
+function node(x,y,label,id,primary=false){
+  const g = document.createElementNS(NS,'g');
+  g.setAttribute('class','node');
+  g.dataset.id = id;
+
+  const c = document.createElementNS(NS,'circle');
+  c.setAttribute('cx',x); c.setAttribute('cy',y);
+  c.setAttribute('r', primary ? 66 : 44);
+  c.setAttribute('fill', primary
+    ? 'url(#gradPrimary)'
+    : 'url(#gradSecondary)'
+  );
+  c.setAttribute('stroke','rgba(255,255,255,0.12)');
+  c.setAttribute('stroke-width','1.5');
+
+  const t = document.createElementNS(NS,'text');
+  t.setAttribute('x',x); t.setAttribute('y',y+5);
+  t.setAttribute('text-anchor','middle');
+  t.setAttribute('fill','currentColor');
+  t.textContent = label;
+
+  g.appendChild(c); g.appendChild(t);
+  svg.appendChild(g);
+  return g;
+}
+
+// Gradients
+const defs = document.createElementNS(NS,'defs');
+const grad1 = document.createElementNS(NS,'radialGradient');
+grad1.id = 'gradPrimary';
+grad1.innerHTML = `
+  <stop offset="0%" stop-color="rgba(255,255,255,0.15)"/>
+  <stop offset="100%" stop-color="rgba(255,255,255,0.06)"/>
+`;
+const grad2 = document.createElementNS(NS,'radialGradient');
+grad2.id = 'gradSecondary';
+grad2.innerHTML = `
+  <stop offset="0%" stop-color="rgba(108,255,255,0.18)"/>
+  <stop offset="100%" stop-color="rgba(20,184,166,0.08)"/>
+`;
+defs.appendChild(grad1); defs.appendChild(grad2); svg.appendChild(defs);
+
+// Center node
+const center = node(cx, cy, "AWS Data Engineering", "center", true);
+
+// Domain ring
+const angleStep = (2*Math.PI)/DOMAINS.length;
+DOMAINS.forEach((d, i) => {
+  const a = i*angleStep - Math.PI/2;
+  const x = cx + R*Math.cos(a);
+  const y = cy + R*Math.sin(a);
+  line(cx, cy, x, y);
+  const g = node(x, y, d.label, d.id, false);
+
+  // Hover tooltip
+  g.addEventListener('mousemove', (e) => {
+    tip.style.opacity = 1;
+    tip.style.transform = 'translateY(0)';
+    tip.style.left = (e.offsetX + 12) + 'px';
+    tip.style.top = (e.offsetY + 12) + 'px';
+    tip.textContent = d.desc;
+  });
+  g.addEventListener('mouseleave', () => {
+    tip.style.opacity = 0;
+    tip.style.transform = 'translateY(6px)';
+  });
+
+  // Click → details
+  g.addEventListener('click', () => selectDomain(d));
+});
+
+function selectDomain(domain){
+  // Panel title/desc
+  document.getElementById('panel-title').textContent = domain.label;
+  document.getElementById('panel-desc').textContent = domain.desc;
+
+  // Tags
+  const tags = document.getElementById('panel-tags');
+  tags.innerHTML = '';
+  domain.tags.forEach(t => {
+    const el = document.createElement('span');
+    el.className = 'chip'; el.textContent = t;
+    tags.appendChild(el);
+  });
+
+  // Cards
+  const cards = document.getElementById('panel-cards');
+  cards.innerHTML = '';
+
+  const c1 = document.createElement('div');
+  c1.className = 'card';
+  c1.innerHTML = `<h3>Responsibilities</h3>
+    <ul class="tight">${domain.bullets.map(b=>`<li>${b}</li>`).join('')}</ul>`;
+  cards.appendChild(c1);
+
+  const c2 = document.createElement('div');
+  c2.className = 'card';
+  c2.innerHTML = `<h3>Common Patterns</h3>
+    <ul class="tight">
+      <li>IaC with CDK/Terraform for repeatable deploys</li>
+      <li>Schema registry + Glue Catalog governance</li>
+      <li>Data quality gates (Great Expectations/Deequ)</li>
+      <li>Blue/green deploys, canary ETL</li>
+    </ul>`;
+  cards.appendChild(c2);
+
+  const c3 = document.createElement('div');
+  c3.className = 'card';
+  c3.innerHTML = `<h3>Quick Checklist</h3>
+    <ul class="tight">
+      <li>IAM least-privilege? KMS encryption on?</li>
+      <li>S3 layout partitioned & small-file issue handled?</li>
+      <li>Retries, idempotency, DLQ configured?</li>
+      <li>Metrics/alarms for lag, failures, costs?</li>
+    </ul>`;
+  cards.appendChild(c3);
+}
+
+// Default select first domain
+selectDomain(DOMAINS[0]);
+</script>
+{% endblock %}

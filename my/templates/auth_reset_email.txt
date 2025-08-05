@@ -1,0 +1,3 @@
+Password reset requested. Click the link below:
+{{ protocol }}://{{ domain }}{{ url }}
+
